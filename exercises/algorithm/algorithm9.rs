@@ -2,10 +2,11 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
+
 
 use std::cmp::Ord;
 use std::default::Default;
+use std::mem::swap;
 
 pub struct Heap<T>
 where
@@ -37,7 +38,18 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.count += 1;
+        self.items.push(value);
+        let mut current = self.count;
+        while current > 1 {
+            let parent = self.parent_idx(current);
+            if (self.comparator)(&self.items[current], &self.items[parent]) {
+                self.items.swap(current, parent);
+                current = parent;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +69,21 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        
+        // Check if the left child exists
+        if left <= self.count {
+            // If the right child exists and is smaller, return the right child index
+            if right <= self.count && (self.comparator)(&self.items[left], &self.items[right]) {
+                return left;
+            }
+            // Otherwise, return the left child index
+            return right;
+        }
+        
+        // If no children, return the current index (or handle as needed)
+        idx
     }
 }
 
@@ -84,8 +109,25 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.count == 0 {
+            return None;
+        }
+        self.items.swap(1, self.count);
+        self.count -= 1;
+        let mut current = 1;
+        while current <= self.count / 2 {
+            let candidate = self.smallest_child_idx(current);
+            if candidate > self.count {
+                break; // No valid child to swap with
+            }
+            if (self.comparator)(&self.items[candidate], &self.items[current]) {
+                self.items.swap(current, candidate);
+                current = candidate;
+            } else {
+                break;
+            }
+        }
+        self.items.pop()
     }
 }
 
